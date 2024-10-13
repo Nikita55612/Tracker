@@ -5,7 +5,9 @@
 ![Tracker](https://github.com/Nikita55612/Tracker/blob/main/screenshots/Screenshot_1.png)
 
 ## config.json
+
 В директории программы должен находиться файл конфигурации.
+
 ```json
 {
   "base_url": "https://rutracker.org",  // Основной URL-адрес сайта RuTracker, к которому будет происходить обращение.
