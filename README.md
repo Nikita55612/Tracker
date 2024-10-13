@@ -1,5 +1,7 @@
 # Tracker
 
+![Tracker](https://github.com/Nikita55612/Tracker/blob/main/screenshots/Screenshot_1.png)
+
 ## Config
 
 ```json
