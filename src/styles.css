@@ -1,0 +1,84 @@
+body {
+  margin: 24px;
+}
+
+#alertBox {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+::selection {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+#searchQueryInput {
+  font-family: "Roboto Mono", monospace;
+  font-weight: 600;
+  font-size: medium;
+}
+
+.search-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+#findBtn {
+  margin-left: auto;
+}
+
+.window {
+  margin: auto;
+  margin-bottom: 24px;
+  max-width: 920px;
+}
+
+.search-results {
+  font-family: "Roboto Mono", monospace;
+  font-weight: 14px;
+}
+
+.search-results-item {
+  padding: 8px;
+}
+
+.item-details {
+  width: 100%;
+}
+
+.item-details th,
+.item-details td {
+  text-align: center;
+}
+
+.item-details td:first-child {
+  text-align: left;
+}
+
+.item-details th:first-child,
+.item-details td:first-child {
+  width: 30%;
+}
+
+.item-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin-top: 4px;
+}
+
+.custom-underline {
+  text-decoration: underline;
+  text-decoration-color: #000000; 
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.item-files-list li {
+  margin: 2px 5px;
+}
