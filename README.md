@@ -11,6 +11,8 @@ Tracker — это инструмент для поиска и загрузки 
 
 - [macos](https://github.com/Nikita55612/Tracker/tree/2caeb3cee91488c587980e6098049e6d31e5b44e/installer/macos)
 
+---
+
 Для обхода блокировки доступа используется proxy. Авторизованные cookie можно изменить в файле конфигурации.
 
 ## config.json
