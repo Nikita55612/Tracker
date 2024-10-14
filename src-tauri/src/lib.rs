@@ -13,8 +13,9 @@ struct AppData {
     client: Client
 }
 
-fn read_config(path: std::path::PathBuf) -> Result<AppConfig, String> {
+fn read_config(mut path: std::path::PathBuf) -> Result<AppConfig, String> {
     let config;
+    if cfg!(target_os = "windows") { path = std::path::PathBuf::from("config.json"); }
     if path.exists() {
         let file_content = std::fs::read_to_string(&path)
             .map_err(|_| "Failed to read configuration file".to_string())?;
