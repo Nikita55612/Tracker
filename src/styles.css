@@ -47,6 +47,12 @@ body {
   padding: 8px;
 }
 
+.next-search-results {
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+}
+
 .item-details {
   width: 100%;
 }

@@ -1,9 +1,9 @@
 // Импорт и экспорт функций
 const { invoke } = window.__TAURI__.core;
 
-// Экспорт функций для глобального использования
-export { processSearchRequest, downloadItemByID, getItemFilesList, hideResults };
+
 window.processSearchRequest = processSearchRequest;
+window.closeAlert = closeAlert;
 window.downloadItemByID = downloadItemByID;
 window.getItemFilesList = getItemFilesList;
 window.hideResults = hideResults;
@@ -11,9 +11,10 @@ window.hideResults = hideResults;
 const alertBox = document.getElementById("alertBox");
 const alertText = document.getElementById("alertText");
 
-// Константы
 const LOADING_TEXT = 'Loading...';
 const FILE_NAME_REGEX = /<b>(.*?)<\/b>/g;
+
+let searchPageNum;
 
 
 function errorMessage(error) {
@@ -22,18 +23,14 @@ function errorMessage(error) {
   console.error(error);
 }
 
-/**
- * Скрывает окно результатов поиска.
- */
+function closeAlert() {
+  alertBox.style.display = "none";
+}
+
 function hideResults() {
   document.getElementById("searchResultsWindow").style.display = "none";
 }
 
-/**
- * Извлекает имена файлов из HTML-строки.
- * @param {string} htmlString - HTML-строка для анализа.
- * @return {string[]} Массив имен файлов.
- */
 function extractFileNames(htmlString) {
   const fileNames = [];
   let match;
@@ -46,41 +43,42 @@ function extractFileNames(htmlString) {
   return fileNames;
 }
 
-/**
- * Обрабатывает запрос поиска.
- */
-async function processSearchRequest() {
+async function processSearchRequest(page) {
+  searchPageNum = page;
   const query = document.getElementById("searchQueryInput").value.trim();
-  if (!query) return;
-
+  if (!query) {
+    errorMessage("Please enter a search query.");
+    return;
+  }
   try {
-    const result = await invoke("search_query", { query });
+    const result = await invoke("search_query", { query, page });
     const searchResults = document.getElementById("searchResults");
     const searchResultsWindow = document.getElementById("searchResultsWindow");
     const obj = JSON.parse(result);
-    searchResults.innerHTML = generateSearchResultsHTML(obj);
+    if (obj.length === 1 && obj[0].id === null) {
+      errorMessage("Nothing was found for your query...");
+      return;
+    }
+    const resultsHTML = generateSearchResultsHTML(obj);
+    if (page > 0) {
+      searchResults.innerHTML += resultsHTML;
+      const nextResults = document.getElementsByClassName("next-search-results")[page - 1];
+      if (nextResults) { nextResults.innerHTML = `<h3>Page №${page + 1}</h3>`; }
+    } else { searchResults.innerHTML = resultsHTML; }
     searchResultsWindow.style.display = "block";
   } catch (error) {
-    errorMessage(`Error processing search request: ${error}`);
+    errorMessage(`Error processing search request:<br>${error}`);
   }
 }
 
-/**
- * Загружает элемент по ID.
- * @param {string} itemId - ID элемента для загрузки.
- */
 async function downloadItemByID(itemId) {
   try {
     await invoke("download_item", { itemId });
   } catch (error) {
-    errorMessage(`Error downloading item: ${error}`);
+    errorMessage(`Error downloading item<br>${error}`);
   }
 }
 
-/**
- * Получает список файлов для элемента.
- * @param {string} itemId - ID элемента.
- */
 async function getItemFilesList(itemId) {
   const filesListElement = document.querySelector(`ul[item-id="${itemId}"] > li > ul[role="menu"]`);
   if (filesListElement && filesListElement.textContent.includes(LOADING_TEXT)) {
@@ -89,16 +87,11 @@ async function getItemFilesList(itemId) {
       const filesList = extractFileNames(result);
       filesListElement.innerHTML = filesList.map(item => `<li>${item}</li>`).join('');
     } catch (error) {
-      errorMessage(`Error getting item files list: ${error}`);
+      errorMessage(`Error getting item files list<br>${error}`);
     }
   }
 }
 
-/**
- * Генерирует HTML для результатов поиска.
- * @param {Object[]} jsonData - Данные результатов поиска.
- * @return {string} HTML-строка результатов поиска.
- */
 function generateSearchResultsHTML(jsonData) {
   return jsonData.map(item => `
     <section class="search-results-item">
@@ -135,15 +128,27 @@ function generateSearchResultsHTML(jsonData) {
         <button class="btn" onclick="downloadItemByID('${item.id}')">Download</button>
       </div>
     </section>
-    <div class="separator"></div>`
-  ).join('').replace(/\n[^\n]*$/, '');
+    <div class="separator"></div>
+    `
+  ).join('').concat("\n", 
+    `
+    <div class="next-search-results">
+      <button class="btn" onclick="processSearchRequest(${searchPageNum + 1})">Next page</button>
+    </div>
+    `
+  );
 }
 
-// Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
+  invoke('init_config')
+    .then((_) => {})
+    .catch((error) => {
+      errorMessage(`Config initialization error<br>${error}<br>
+        Add the <a href="https://github.com/Nikita55612/Tracker/blob/main/src-tauri/config.json" target="_blank">configuration file</a> to the program directory.`)
+    });
   document.addEventListener('keydown', event => {
     if (event.key === 'Enter' && document.activeElement.id === "searchQueryInput") {
-      processSearchRequest();
+      processSearchRequest(0);
     }
   });
 });
