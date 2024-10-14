@@ -7,7 +7,7 @@ Tracker — это инструмент для поиска и загрузки 
 
 ## Установка
 
-[windows]([https://github.com/Nikita55612/Tracker/tree/2caeb3cee91488c587980e6098049e6d31e5b44e/installer/macos](https://github.com/Nikita55612/Tracker/tree/4458f63848028d38a706a6709c46fbfd79bbb1f5/installer/windows))
+[windows](https://github.com/Nikita55612/Tracker/tree/4458f63848028d38a706a6709c46fbfd79bbb1f5/installer/windows)
 [macos](https://github.com/Nikita55612/Tracker/tree/2caeb3cee91488c587980e6098049e6d31e5b44e/installer/macos)
 
 Для обхода блокировки доступа используется proxy. Авторизованные cookie можно изменить в файле конфигурации.
