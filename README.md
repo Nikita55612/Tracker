@@ -7,9 +7,20 @@ Tracker — это инструмент для поиска и загрузки 
 
 ## Установка
 
-- [windows](https://github.com/Nikita55612/Tracker/tree/4458f63848028d38a706a6709c46fbfd79bbb1f5/installer/windows)
+### [Windows](https://github.com/Nikita55612/Tracker/tree/4458f63848028d38a706a6709c46fbfd79bbb1f5/installer/windows)
 
-- [macos](https://github.com/Nikita55612/Tracker/tree/2caeb3cee91488c587980e6098049e6d31e5b44e/installer/macos)
+Для установки на Windows доступны следующие файлы:
+
+- Tracker_0.1.0_x64-setup.exe: Установочный файл для x64 систем.
+- Tracker_0.1.0_x64_en-US.msi: Альтернативный MSI-установщик для x64 систем.
+- tracker.exe: Портативная версия.
+
+### [macOS](https://github.com/Nikita55612/Tracker/tree/2caeb3cee91488c587980e6098049e6d31e5b44e/installer/macos) (ARM)
+
+Для установки на macOS доступны следующие файлы:
+
+- Tracker.app.zip: Архивированная версия приложения для macOS.
+- Tracker_0.1.0_aarch64.dmg: Установочный DMG-файл для macOS (архитектура ARM).
 
 ---
 
