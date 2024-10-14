@@ -140,12 +140,6 @@ function generateSearchResultsHTML(jsonData) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  invoke('init_config')
-    .then((_) => {})
-    .catch((error) => {
-      errorMessage(`Config initialization error<br>${error}<br>
-        Add the <a href="https://github.com/Nikita55612/Tracker/blob/main/src-tauri/config.json" target="_blank">configuration file</a> to the program directory.`)
-  });
   document.addEventListener('keydown', event => {
     if (event.key === 'Enter' && document.activeElement.id === "searchQueryInput") {
       processSearchRequest(0);
