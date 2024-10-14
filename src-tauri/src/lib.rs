@@ -9,21 +9,26 @@ use std::fs::File;
 
 
 // Constants
-static CONFIG: Lazy<AppConfig> = Lazy::new(|| {
+static CONFIG: Lazy<Result<AppConfig, String>> = Lazy::new(|| {
     let config_path = "config.json";
     if Path::new(config_path).exists() {
-        let file_content = std::fs::read_to_string(config_path).expect("Failed to read configuration file");
-        serde_json::from_str::<AppConfig>(&file_content).expect("Failed to deserialize configuration")
+        let file_content = std::fs::read_to_string(config_path)
+            .map_err(|_| "Failed to read configuration file".to_string())?;
+        let config = serde_json::from_str::<AppConfig>(&file_content)
+            .map_err(|_|"Failed to deserialize configuration".to_string())?;
+        Ok(config)
     } else {
         let config = AppConfig {
             base_url: "https://rutracker.org".to_string(),
             proxy_url: "https://ps1.blockme.site:443".to_string(),
-            cookie: "bb_session=".to_string(),
+            cookie: "bb_session=0-52335687-cqygg3U3HlXLVNkKPD6R".to_string(),
         };
-        let json_data = serde_json::to_string_pretty(&config).expect("Failed to serialize configuration");
-        let mut file = File::create(config_path).expect("Failed to create configuration file");
-        file.write_all(json_data.as_bytes()).expect("Failed to write to configuration file");
-        panic!("Configuration file was created. Please restart the application.");
+        let json_data = serde_json::to_string_pretty(&config)
+            .map_err(|_|"Failed to serialize configuration".to_string())?;
+        let mut file = File::create(config_path).map_err(|_|"Failed to create configuration file".to_string())?;
+        file.write_all(json_data.as_bytes())
+            .map_err(|_|"Failed to write to configuration file".to_string())?;
+        Ok(config)
     }
 });
 
@@ -85,20 +90,20 @@ impl std::fmt::Display for AppError {
 
 // Helper function to create a client with proxy
 fn create_client() -> Result<Client, AppError> {
-    let proxy = reqwest::Proxy::https(&CONFIG.proxy_url)?;
+    let proxy = reqwest::Proxy::https(CONFIG.as_ref().unwrap().proxy_url.as_str())?;
     Ok(Client::builder()
         .proxy(proxy)
         .danger_accept_invalid_certs(true)
         .build()?)
 }
 
-async fn make_search_query(query: &str) -> Result<String, AppError> {
-    let url = format!("{}/forum/tracker.php", &CONFIG.base_url);
+async fn make_search_query(query: &str, page: u64) -> Result<String, AppError> {
+    let url = format!("{}/forum/tracker.php", CONFIG.as_ref().unwrap().base_url.as_str());
     let client = create_client()?;
     let response = client
         .post(url)
-        .query(&[("nm", query), ("o", "4"), ("s", "2")])
-        .header("Cookie", &CONFIG.cookie)
+        .query(&[("start", (page * 50).to_string().as_str()), ("nm", query), ("o", "4"), ("s", "2")])
+        .header("Cookie", CONFIG.as_ref().unwrap().cookie.as_str())
         .send()
         .await?;
     response.error_for_status_ref()?;
@@ -135,12 +140,12 @@ fn parse_search_query(content: String) -> Result<String, AppError> {
 
 #[tauri::command]
 async fn download_item(item_id: &str) -> Result<String, String> {
-    let url = format!("{}/forum/dl.php", &CONFIG.base_url);
+    let url = format!("{}/forum/dl.php", CONFIG.as_ref().unwrap().base_url.as_str());
     let client = create_client().map_err(|e| e.to_string())?;
     let response = client
         .post(url)
         .query(&[("t", item_id)])
-        .header("Cookie", &CONFIG.cookie)
+        .header("Cookie", CONFIG.as_ref().unwrap().cookie.as_str())
         .send()
         .await
         .map_err(|e| e.to_string())?;
@@ -177,12 +182,12 @@ async fn download_item(item_id: &str) -> Result<String, String> {
 }
 
 async fn request_item_files_list(item_id: &str) -> Result<String, AppError> {
-    let url = format!("{}/forum/viewtorrent.php", &CONFIG.base_url);
+    let url = format!("{}/forum/viewtorrent.php", CONFIG.as_ref().unwrap().base_url.as_str());
     let client = create_client()?;
     let response = client
         .post(url)
         .form(&[("t", item_id)])
-        .header("Cookie", &CONFIG.cookie)
+        .header("Cookie", CONFIG.as_ref().unwrap().cookie.as_str())
         .send()
         .await?;
     
@@ -198,9 +203,17 @@ async fn get_item_files_list(item_id: &str) -> Result<String, String> {
 }
 
 #[tauri::command]
-async fn search_query(query: &str) -> Result<String, String> {
-    let result = make_search_query(query).await.map_err(|e| e.to_string())?;
+async fn search_query(query: &str, page: u64) -> Result<String, String> {
+    let result = make_search_query(query, page).await.map_err(|e| e.to_string())?;
     parse_search_query(result).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn init_config() -> Result<String, String> {
+    match CONFIG.as_ref() {
+        Ok(config) => Ok(serde_json::to_string(config).unwrap()),
+        Err(err) => Err(err.clone())
+    }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -208,6 +221,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
+            init_config,
             search_query, 
             download_item, 
             get_item_files_list
