@@ -27,7 +27,7 @@ fn read_config(mut path: std::path::PathBuf) -> Result<AppConfig, String> {
             .map_err(|_|"Failed to serialize configuration".to_string())?;
         let mut file = File::create(&path).map_err(|_|"Failed to create configuration file".to_string())?;
         file.write_all(json_data.as_bytes())
-            .map_err(|_|"Failed to write to configuration file".to_string())?; 
+            .map_err(|_|"Failed to write to configuration file".to_string())?;
     }
     Ok(config)
 }
@@ -44,7 +44,7 @@ impl Default for AppConfig {
         AppConfig {
             base_url: "https://rutracker.org".to_string(),
             proxy_url: "https://ps1.blockme.site:443".to_string(),
-            cookie: "bb_session=0-52335687-cqygg3U3HlXLVNkKPD6R".to_string(),
+            cookie: "bb_session=0-52836456-SoxoLDHPkNv8ktDyoxsR".to_string(),
         }
     }
 }
@@ -174,7 +174,7 @@ pub fn run() {
                 .danger_accept_invalid_certs(true)
                 .build()
                 .map_err(|e| e.to_string())?;
-            app.manage(AppData { 
+            app.manage(AppData {
                 config: config,
                 client: client
             });
@@ -182,8 +182,8 @@ pub fn run() {
         })
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
-            search_query, 
-            download_item, 
+            search_query,
+            download_item,
             get_item_files_list
         ])
         .run(tauri::generate_context!())
